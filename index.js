@@ -12,10 +12,10 @@ app.use("/login", loginRoute);
 app.use(authMiddlewareJWT);
 app.use("/users", userRoutes);
 
-try {
-  app.listen(3000, () => {
+app.listen(3000, (error) => {
+  if (error) {
+    console.error("inside listen callback", error);
+  } else {
     console.log("Server is up and running");
-  });
-} catch (error) {
-  console.error("inside catch", error);
-}
+  }
+});
