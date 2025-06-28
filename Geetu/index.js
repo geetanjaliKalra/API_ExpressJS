@@ -2,7 +2,15 @@ import express from "express";
 import { authMiddleware } from "./basicAuthMiddleWare.js";
 import { gUserRoute } from "./geetuUsers.js";
 import { jwtMiddleware } from "./jwtMiddleWare.js";
-import { loginRoute } from "../gLogin.js";
+import { loginRoute } from "./gLogin.js";
+import { MONGO_URI } from "../dbCreds.js";
+import mongoose from "mongoose";
+
+mongoose
+  .connect(MONGO_URI)
+  .then(() => console.log("✅ Connected to MongoDB with Mongoose"))
+  .catch((err) => console.error("❌ MongoDB connection error:", err));
+
 const app = express();
 app.use(express.json());
 //app.use(authMiddleware);

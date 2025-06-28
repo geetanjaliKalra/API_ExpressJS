@@ -37,6 +37,6 @@ loginRoute.post("/", async (req, res) => {
 
   return res.json({
     error: false,
-    token,
+    token: token,
   });
 });
