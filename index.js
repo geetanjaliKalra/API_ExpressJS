@@ -3,8 +3,15 @@ import express from "express";
 import { userRoutes } from "./user.js";
 import { authMiddlewareJWT } from "./authMiddlewareJWT.js";
 import { loginRoute } from "./login.js";
+import mongoose from "mongoose";
+import { MONGO_URI } from "./dbCreds.js";
 
 const app = express();
+
+mongoose
+  .connect(MONGO_URI)
+  .then(() => console.log("✅ Connected to MongoDB with Mongoose"))
+  .catch((err) => console.error("❌ MongoDB connection error:", err));
 
 app.use(express.json());
 

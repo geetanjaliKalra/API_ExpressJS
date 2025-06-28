@@ -1,42 +1,50 @@
 import express from "express";
+import userModel from "./models/user.model.js";
 
 export const userRoutes = express.Router();
 
-let users = [
-  { id: 1, name: "Alice" },
-  { id: 2, name: "Bob" },
-];
+// let users = [
+//   { id: 1, name: "Alice" },
+//   { id: 2, name: "Bob" },
+// ];
 
-let id = 3;
+// let id = 3;
 
-userRoutes.get("/", (req, res) => {
+userRoutes.get("/", async (req, res) => {
+  const users = await userModel.find().select({ __v: 0 });
   res.json(users);
 });
 
-userRoutes.get("/:id", (req, res) => {
+userRoutes.get("/:id", async (req, res) => {
   const userId = req.params.id;
   console.log("request recived to get user details for id: ", userId);
-  const user = users.filter((u) => u.id == userId);
+  // const user = users.filter((u) => u.id == userId);
 
-  if (!user.length) {
+  const userDB = await userModel.findOne({ _id: userId });
+
+  if (!userDB) {
     console.log("No User found with id: ", userId);
     return res.json("No User found with id: " + userId);
   }
-  return res.json(user[0]);
+  return res.json(userDB);
 });
 
-userRoutes.post("/", (req, res) => {
+userRoutes.post("/", async (req, res) => {
   try {
     const { name, mobile } = req.body;
-    if (!name || !mobile) {
-      return res
-        .status(400)
-        .json({ error: true, message: "either name or mobile is missing" });
-    }
-    const newUser = { id: id++, name, mobile };
-    users.push(newUser);
+    // if (!name || !mobile) {
+    //   return res
+    //     .status(400)
+    //     .json({ error: true, message: "either name or mobile is missing" });
+    // }
+    // const newUser = { id: id++, name, mobile };
+    // users.push(newUser);
 
-    res.status(201).json(newUser);
+    const userDB = await userModel.insertOne({ name, mobile });
+
+    console.log(userDB);
+
+    res.status(201).json(userDB);
   } catch (error) {
     console.log(error.message);
 
@@ -46,7 +54,7 @@ userRoutes.post("/", (req, res) => {
   }
 });
 
-userRoutes.delete("/:id", (req, res) => {
+userRoutes.delete("/:id", async (req, res) => {
   try {
     const userId = req.params.id;
     if (!userId) {
@@ -54,11 +62,8 @@ userRoutes.delete("/:id", (req, res) => {
         .status(400)
         .json({ error: true, message: "User Id is missing" });
     }
-    users = users.filter((u) => u.id != userId);
-    res.status(200).json({
-      error: false,
-      message: `If User with id ${userId} exists then it is deleted successfully`,
-    });
+    const userDB = await userModel.deleteOne({ _id: userId });
+    return res.json(userDB);
   } catch (error) {
     res
       .status(500)
@@ -66,14 +71,16 @@ userRoutes.delete("/:id", (req, res) => {
   }
 });
 
-userRoutes.put("/", (req, res) => {
+userRoutes.put("/", async (req, res) => {
   try {
     const { id, name, mobile } = req.body;
-    const newUser = { id, name, mobile };
-    users = users.map((u) => (u.id == id ? newUser : u));
-    res
-      .status(200)
-      .json({ error: false, message: "User updated successfully", users });
+    const newUser = { name, mobile };
+
+    const userDB = await userModel.findByIdAndUpdate(id, newUser, {
+      new: true,
+    });
+
+    res.status(200).json(userDB);
   } catch (error) {
     res
       .status(500)
@@ -81,20 +88,20 @@ userRoutes.put("/", (req, res) => {
   }
 });
 
-userRoutes.patch("/", (req, res) => {
+userRoutes.patch("/", async (req, res) => {
   try {
     const { id, name, mobile } = req.body;
     if (!id) {
       return res.status(400).json("user id is missing");
     }
-    const newUser = {};
-    name ? (newUser.name = name) : newUser;
-    mobile ? (newUser.mobile = mobile) : newUser;
 
-    users = users.map((u) => (u.id == id ? { ...u, ...newUser } : u));
-    res
-      .status(200)
-      .json({ error: false, message: "User updated successfully", users });
+    const userDB = await userModel.findByIdAndUpdate(
+      id,
+      { name, mobile },
+      { new: true }
+    );
+
+    res.status(200).json(userDB);
   } catch (error) {
     res
       .status(500)
